@@ -5,27 +5,73 @@
 	<script type="text/javascript">
 
         function WebSocketTest() {
-        var messageContainer = document.getElementById("messages");
-            if ("WebSocket" in window) {
-                messageContainer.innerHTML = "WebSocket is supported by your Browser!";
-                var ws = new WebSocket("ws://localhost:8888/ws/?Id=123456789");
-                ws.onopen = function() {
-                    ws.send("Message to send");
-                };
-                ws.onmessage = function (evt) { 
-                    var received_msg = evt.data;
-                    messageContainer.innerHTML = evt.data;//"Message is received...";
-                };
-                ws.onclose = function() { 
-                    messageContainer.innerHTML = "Connection is closed...";
-                };
-            } else {
-                messageContainer.innerHTML = "WebSocket NOT supported by your Browser!";
+
+            var recv;
+            var res;
+
+
+            var fileReader = new FileReader();
+            fileReader.onload = function(e) {
+                window.buf = arrayBuffer = e.target.result;
+
+                console.log("Main:", arrayBuffer);
+
+
+                var size = (new Uint32Array(arrayBuffer.slice(0, 4)))[0]
+                console.log("Size:", size);
+
+                var string = String.fromCharCode.apply(null, new Uint8Array(arrayBuffer.slice(4, 4+size)));
+                console.log("String:", string);
+
+
+                var offsetToArray = 4 + size;
+                console.log(offsetToArray, offsetToArray+12);
+
+                var slc = arrayBuffer.slice(offsetToArray, offsetToArray+12)
+                console.log("Final", slc);
+
+                res = new Float32Array(slc);
+                console.log(res);
+            };
+
+
+
+            ws = new WebSocket("ws://localhost:8888/ws/");
+
+            ws.onmessage = function (e) {
+                console.log(e);
+                recv = e.data;
+                fileReader.readAsArrayBuffer(recv);
+
+
             }
+
+
+
+
+
+//        var messageContainer = document.getElementById("messages");
+//            if ("WebSocket" in window) {
+//                messageContainer.innerHTML = "WebSocket is supported by your Browser!";
+//                var ws = new WebSocket("ws://localhost:8888/ws/?Id=123456789");
+//                ws.onopen = function() {
+//                    ws.send("Message to send");
+//                };
+//                ws.onmessage = function (evt) {
+//                    var received_msg = evt.data;
+//                    messageContainer.innerHTML = evt.data;//"Message is received...";
+//                };
+//                ws.onclose = function() {
+//                    messageContainer.innerHTML = "Connection is closed...";
+//                };
+//            } else {
+//                messageContainer.innerHTML = "WebSocket NOT supported by your Browser!";
+//            }
         }
         </script>
     </head>
     <body>
+        DATA: {{DATA}}
         <a href="javascript:WebSocketTest()">Run WebSocket</a>
         <div id="messages" style="height:200px;background:black;color:white;">&nbsp;</div>
     </body>
